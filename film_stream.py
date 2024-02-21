@@ -142,7 +142,7 @@ if uname == 'student' and pwd == 'student':
 
         st.write(mycursor.rowcount, 'record created.')
         st.write('\n')
-
+# Movies
     user_input = st.selectbox("Movie Menu", [
                             "Choose an Option", 
                             "View Movies",
@@ -286,7 +286,7 @@ if uname == 'student' and pwd == 'student':
             st.write(df)
             st.write('\n')
 
-# Actor Menu
+# Actors
     actor_input = st.selectbox("Actor Menu", [
                                "Choose an Option", 
                                "View Actors", 
@@ -366,6 +366,7 @@ if uname == 'student' and pwd == 'student':
         st.write(mycursor.rowcount, 'record updated.')
         st.write('\n')
 
+    # Link actor to movie
     elif actor_input == "Link Actor to Movie":
         
             test = mycursor.execute('''
@@ -418,6 +419,56 @@ if uname == 'student' and pwd == 'student':
                     add_movie_actor = actor(mycursor, film)
                     add_movie_actor.add_movie_actor(actor_id, movie_id)
 
+    elif actor_input == "Update Actor Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT actor_id
+                                FROM actor
+                                WHERE actor_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Actors in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Actors in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT actor_id
+                            ,      actor_fname
+                            ,      actor_lname
+                            FROM actor
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Actor Id', 'Actor First Name', 'Actor Last Name']
+            st.write(s_df)
+            actor_id = st.text_input('Enter Actor Id: ')
+            st.write('\n')
+            movie_actor_button = st.button('Update Actor Link to Movie')
+
+            if movie_actor_button:
+                update_movie_actor = actor(mycursor, film)
+                update_movie_actor.update_movie_actor(actor_id, movie_id)
+
+    #update actor
     elif actor_input == "Update Actor":
         st.write('\n')
         test = mycursor.execute('''
@@ -454,7 +505,8 @@ if uname == 'student' and pwd == 'student':
                 update_actor.update_actor(actor_id, a_fname, a_lname)
             st.write(mycursor.rowcount, 'record updated')
             st.write('\n')
-
+    
+    # Delete actor
     elif actor_input == 'Delete Actor':
         test = mycursor.execute('''
                                 SELECT actor_id
@@ -494,9 +546,11 @@ if uname == 'student' and pwd == 'student':
                                     "Choose an Option", 
                                     "View Genres",
                                     "Add Genre",
+                                    "Link Genre to Movie",
+                                    "Update Genre Link to Movie",
                                     "Update Genre",
                                     "Delete Genre"])
-    # View repair requests
+    # View genres
     if genre_input == "View Genres":
         st.write('\n')
         # If no repairs or if valueerror, print message
@@ -550,7 +604,7 @@ if uname == 'student' and pwd == 'student':
                 st.write(g_df)
                 st.write('\n')
 
-    # Create repair request
+    # Add Genre
     elif genre_input == "Add Genre":
         
         st.write('\n')
@@ -565,6 +619,7 @@ if uname == 'student' and pwd == 'student':
         st.write(mycursor.rowcount, 'record created.')
         st.write('\n')
 
+    # Link Genre to Movie
     elif genre_input == "Link Genre to Movie":
         test = mycursor.execute('''
                                 SELECT movie_id
@@ -613,7 +668,53 @@ if uname == 'student' and pwd == 'student':
                 add_genre_movie = genre(mycursor, film)
                 add_genre_movie.add_movie_genre(genre_id, movie_id)
 
-    
+    elif genre_input == "Update Genre Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT genre_id
+                                FROM genre
+                                WHERE genre_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Genres in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Genres in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT genre_id
+                            ,      genre_name
+                            FROM genre
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Genre Id', 'Genre Name']
+            st.write(s_df)
+            genre_id = st.text_input('Enter Genre Id: ')
+            st.write('\n')
+            genre_movie_button = st.button('Update Genre Link to Movie')
+
+            if genre_movie_button:
+                update_genre_movie = genre(mycursor, film)
+                update_genre_movie.update_movie_genre(genre_id, movie_id)
 
     # Update Genre
     elif genre_input == "Update Genre":
@@ -691,6 +792,7 @@ if uname == 'student' and pwd == 'student':
                                     "View Features",
                                     "Add Feature",
                                     "Link Feature to Movie",
+                                    "Update Feature Link to Movie"
                                     "Update Feature",
                                     "Delete Feature"])
     
@@ -811,6 +913,54 @@ if uname == 'student' and pwd == 'student':
                 add_feature_movie = feature(mycursor, film)
                 add_feature_movie.add_movie_feature(feature_id, movie_id)
 
+    elif feature_input == "Update Feature Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT feature_id
+                                FROM feature
+                                WHERE feature_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Features in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Features in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT feature_id
+                            ,      feature_name
+                            FROM feature
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Feature Id', 'Feature Name']
+            st.write(s_df)
+            feature_id = st.text_input('Enter Feature Id: ')
+            st.write('\n')
+            feature_movie_button = st.button('Update Feature Link to Movie')
+
+            if feature_movie_button:
+                update_feature_movie = feature(mycursor, film)
+                update_feature_movie.update_movie_feature(feature_id, movie_id)
+
     # Update feature
     elif feature_input == "Update Feature":
         st.write('\n')
@@ -887,6 +1037,7 @@ if uname == 'student' and pwd == 'student':
                                     "View Studios",
                                     "Add Studio",
                                     "Link Studio to Movie",
+                                    "Update Studio Link to Movie",
                                     "Update Studio",
                                     "Delete Studio"])
     # View studio
@@ -1009,6 +1160,55 @@ if uname == 'student' and pwd == 'student':
             if studio_movie_button:
                 add_studio_movie = studio(mycursor, film)
                 add_studio_movie.add_movie_studio(studio_id, movie_id)
+
+    # Update studio link to movie
+    elif studio_input == "Update Studio Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT studio_id
+                                FROM studio
+                                WHERE studio_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Studios in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Studios in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT studio_id
+                            ,      studio_name 
+                            FROM studio
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Studio Id', 'Studio Name']
+            st.write(s_df)
+            studio_id = st.text_input('Enter Studio Id: ')
+            st.write('\n')
+            studio_movie_button = st.button('Update Studio Link to Movie')
+
+            if studio_movie_button:
+                update_studio_movie = studio(mycursor, film)
+                update_studio_movie.update_movie_studio(studio_id, movie_id)
 
     # Update studio
     elif studio_input == "Update Studio":
@@ -1200,6 +1400,7 @@ if uname == 'student' and pwd == 'student':
                                     "View Media",
                                     "Add Media",
                                     "Link Media, Movie, and Price",
+                                    "Update Media and Price Links to Movie"
                                     "Update Media",
                                     "Delete Media"])
     # View media
@@ -1322,6 +1523,7 @@ if uname == 'student' and pwd == 'student':
         st.write(mycursor.rowcount, 'record created.')
         st.write('\n')
 
+    # Link media and price to movie
     elif media_input == "Link Media, Movie, and Price":
         # checkbox to add media to movie
         st.write('\n')
@@ -1381,6 +1583,67 @@ if uname == 'student' and pwd == 'student':
             if media_movie_button:
                 add_media_movie = media(mycursor, film)
                 add_media_movie.add_movie_media(media_id, me_movie_id, price_id)
+
+    # Update media and price link to movie
+    elif media_input == "Update Media and Price Links to Movie":
+        # checkbox to add media to movie
+        st.write('\n')
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT price_id
+                                FROM price
+                                ''')
+        newtest2 = mycursor.fetchall()
+        # print(newtest)
+        # if newtest is empty list, print message
+        if not newtest and not newtest2:
+            st.write('No Movies or Prices in Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Prices in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT media_id
+                            ,      media_type
+                            FROM media
+                            ''')
+            me_df = pd.DataFrame(mycursor.fetchall())
+            me_df.columns = ['Media Id', 'Media Type']
+            st.write(me_df)
+            media_id = st.text_input('Enter Media Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT price_id
+                            ,      price_value
+                            FROM   price
+                            ''')
+            p_df = pd.DataFrame(mycursor.fetchall())
+            p_df.columns = ['Price Id', 'Price Value']
+            st.write(p_df)
+            price_id = st.text_input('Enter Price Id: ')
+            if price_id == '':
+                price_id = None
+            media_movie_button = st.button('Update Media and Price Links to Movie')
+
+            if media_movie_button:
+                update_media_movie = media(mycursor, film)
+                update_media_movie.update_movie_media(media_id, me_movie_id, price_id)
 
     # Update media
     elif media_input == "Update Media":

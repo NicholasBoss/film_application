@@ -25,6 +25,14 @@ class genre:
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')
 
+    def update_movie_genre(self, genre_id, movie_id):
+        self.db_cursor.execute('SELECT movie_genre_id FROM movie_genre WHERE genre_id = %s AND movie_id = %s',(genre_id, movie_id))
+        result = self.db_cursor.fetchone()
+        self.db_cursor.execute('UPDATE movie_genre SET movie_id = %s, genre_id = %s WHERE movie_genre_id = %s', (movie_id, genre_id, result[0]))
+        self.mydb.commit()
+        print(self.db_cursor.rowcount, 'record updated.')
+        print('\n')
+
     def delete_genre(self, genre_id):
         self.db_cursor.execute('DELETE FROM genre WHERE genre_id = %s', (genre_id, ))
         self.mydb.commit()

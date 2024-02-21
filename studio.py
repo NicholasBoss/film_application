@@ -25,6 +25,14 @@ class studio:
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')
 
+    def update_movie_studio(self, studio_id, movie_id):
+        self.db_cursor.execute('SELECT movie_studio_id FROM movie_studio WHERE studio_id = %s AND movie_id = %s',(studio_id, movie_id))
+        result = self.db_cursor.fetchone()
+        self.db_cursor.execute('UPDATE movie_studio SET movie_id = %s, studio_id = %s WHERE movie_studio_id = %s', (movie_id, studio_id, result[0]))
+        self.mydb.commit()
+        print(self.db_cursor.rowcount, 'record updated.')
+        print('\n')
+
     def delete_studio(self, studio_id):
         self.db_cursor.execute('DELETE FROM studio WHERE studio_id = %s', (studio_id, ))
         self.mydb.commit()
