@@ -1218,8 +1218,12 @@ if uname == 'student' and pwd == 'student':
             newtest2 = mycursor.fetchall()
             # print(newtest)
             # if newtest is empty list, print message
-            if not newtest or not newtest2:
+            if not newtest and not newtest2:
                 st.write('No Movies or Prices in Database.')
+            elif not newtest:
+                st.write('No Movies in Database.')
+            elif not newtest2:
+                st.write('No Prices in Database.')
             else:
                 mycursor.execute('''
                                 SELECT movie_title
@@ -1229,7 +1233,7 @@ if uname == 'student' and pwd == 'student':
                 m_df = pd.DataFrame(mycursor.fetchall())
                 m_df.columns = ['Movie Title', 'Movie Id']
                 st.write(m_df)
-                movie_id = st.text_input('Enter Movie Id: ')
+                me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
                 st.write('\n')
                 mycursor.execute('''
                                 SELECT price_id
@@ -1244,7 +1248,7 @@ if uname == 'student' and pwd == 'student':
 
                 if media_movie_button:
                     add_media_movie = media(mycursor, film)
-                    add_media_movie.add_movie_media(media_type, movie_id)
+                    add_media_movie.add_movie_media(media_type, me_movie_id)
         else:
             media_button = st.button('Add Media')
             # use media.py add_media function
