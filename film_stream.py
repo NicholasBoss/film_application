@@ -65,35 +65,41 @@ if uname == 'student' and pwd == 'student':
     st.write('Please select an option from the menus below')
 
     if st.checkbox("Show PDF of the Film Database"):
-        mycursor.execute('''
-                         SELECT movie_title
-                        ,      GROUP_CONCAT(DISTINCT studio_name) AS Studio
-                        ,      GROUP_CONCAT(DISTINCT media_type) AS 'Media Type'
-                        ,      movie_year
-                        ,      GROUP_CONCAT(DISTINCT genre_name) AS Genre
-                        ,      GROUP_CONCAT( DISTINCT CONCAT_WS(' ',actor_fname, actor_lname)) AS Actor
-                        ,      GROUP_CONCAT( DISTINCT feature_name) AS Feature
-                        ,      rating_level
-                        ,      GROUP_CONCAT(DISTINCT CONCAT('$',price_value)) AS Price
-                        FROM movie m
-                            LEFT JOIN movie_studio ms ON m.movie_id = ms.movie_id
-                            LEFT JOIN studio s ON ms.studio_id = s.studio_id
-                            LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
-                                LEFT JOIN media as me ON mm.media_id = me.media_id
-                                LEFT JOIN price as p ON mm.price_id = p.price_id
-                            LEFT JOIN movie_genre as mg ON m.movie_id = mg.movie_id
-                                LEFT JOIN genre as g ON mg.genre_id = g.genre_id
-                            LEFT JOIN cast as c ON m.movie_id = c.movie_id
-                                LEFT JOIN actor as a ON c.actor_id = a.actor_id
-                            LEFT JOIN movie_feature as mf ON m.movie_id = mf.movie_id
-                                LEFT JOIN feature as f ON mf.feature_id = f.feature_id
-                            LEFT JOIN rating as r ON m.rating_id = r.rating_id
-                        GROUP BY 1,4,8, m.movie_id
-                        ORDER BY m.movie_id;
-                        ''')
-        df = pd.DataFrame(mycursor.fetchall())
-        df.columns = ['Movie Title', 'Studio', 'Media Type', 'Movie Year', 'Genre', 'Actor', 'Feature', 'Rating', 'Price']
-        st.write(df)
+        test = mycursor.execute('''SELECT * FROM movie''')
+        newtest = mycursor.fetchall()
+
+        if not newtest:
+            st.write("There's no information in the database. Cannot generate PDF.")
+        else:
+            mycursor.execute('''
+                            SELECT movie_title
+                            ,      GROUP_CONCAT(DISTINCT studio_name) AS Studio
+                            ,      GROUP_CONCAT(DISTINCT media_type) AS 'Media Type'
+                            ,      movie_year
+                            ,      GROUP_CONCAT(DISTINCT genre_name) AS Genre
+                            ,      GROUP_CONCAT( DISTINCT CONCAT_WS(' ',actor_fname, actor_lname)) AS Actor
+                            ,      GROUP_CONCAT( DISTINCT feature_name) AS Feature
+                            ,      rating_level
+                            ,      GROUP_CONCAT(DISTINCT CONCAT('$',price_value)) AS Price
+                            FROM movie m
+                                LEFT JOIN movie_studio ms ON m.movie_id = ms.movie_id
+                                LEFT JOIN studio s ON ms.studio_id = s.studio_id
+                                LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
+                                    LEFT JOIN media as me ON mm.media_id = me.media_id
+                                    LEFT JOIN price as p ON mm.price_id = p.price_id
+                                LEFT JOIN movie_genre as mg ON m.movie_id = mg.movie_id
+                                    LEFT JOIN genre as g ON mg.genre_id = g.genre_id
+                                LEFT JOIN cast as c ON m.movie_id = c.movie_id
+                                    LEFT JOIN actor as a ON c.actor_id = a.actor_id
+                                LEFT JOIN movie_feature as mf ON m.movie_id = mf.movie_id
+                                    LEFT JOIN feature as f ON mf.feature_id = f.feature_id
+                                LEFT JOIN rating as r ON m.rating_id = r.rating_id
+                            GROUP BY 1,4,8, m.movie_id
+                            ORDER BY m.movie_id;
+                            ''')
+            df = pd.DataFrame(mycursor.fetchall())
+            df.columns = ['Movie Title', 'Studio', 'Media Type', 'Movie Year', 'Genre', 'Actor', 'Feature', 'Rating', 'Price']
+            st.write(df)
 
 
     user_input = st.selectbox("Rating Menu", [
