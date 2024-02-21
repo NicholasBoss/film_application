@@ -1206,16 +1206,19 @@ if uname == 'student' and pwd == 'student':
         if st.checkbox('Add Media to Movie'):
             st.write('\n')
             test = mycursor.execute('''
-                                    SELECT m.movie_id, p.price_id
-                                    FROM movie m
-                                    LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
-                                    LEFT JOIN price p ON mm.price_id = p.price_id
-                                    WHERE m.movie_id IS NOT NULL AND p.price_id IS NOT NULL
+                                    SELECT movie_id
+                                    FROM movie
                                     ''')
             newtest = mycursor.fetchall()
+
+            test2 = mycursor.execute('''
+                                    SELECT price_id
+                                    FROM price
+                                    ''')
+            newtest2 = mycursor.fetchall()
             # print(newtest)
             # if newtest is empty list, print message
-            if not newtest:
+            if not newtest or not newtest2:
                 st.write('No Movies or Prices in Database.')
             else:
                 mycursor.execute('''
