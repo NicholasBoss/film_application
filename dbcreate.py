@@ -62,7 +62,7 @@ class create:
         self.db_cursor.execute('DROP TABLE IF EXISTS media')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS film.media '
                                '(media_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY'
-                               ', media_name VARCHAR(45) NOT NULL)'
+                               ', media_type VARCHAR(45) NOT NULL)'
                                'ENGINE = InnoDB;')
         
         self.db_cursor.execute('DROP TABLE IF EXISTS price')

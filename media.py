@@ -4,9 +4,9 @@ class media:
         self.db_cursor = db_cursor
         self.mydb = mydb
 
-    def add_media(self, media_id, media_title):
-        self.db_cursor.execute('INSERT INTO media (media_id, media_title) VALUES (%s, %s)',
-                                (media_id, media_title))
+    def add_media(self, media_title):
+        self.db_cursor.execute('INSERT INTO media (media_type) VALUES (%s)',
+                                (media_title,))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')

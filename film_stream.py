@@ -1148,21 +1148,43 @@ if uname == 'student' and pwd == 'student':
                         st.write('\n')
             # Show prices, media, and movies
             elif st.checkbox('Show Movies by Media and Price'):
-                mycursor.execute('''
-                                SELECT movie_title
-                                ,      GROUP_CONCAT(media_type) AS media_type
-                                ,      GROUP_CONCAT(price_value) AS price_value
-                                FROM movie m
-                                LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
-                                LEFT JOIN media md ON mm.media_id = md.media_id
-                                LEFT JOIN price p ON mm.price_id = p.price_id
-                                GROUP BY movie_title, m.movie_id
-                                ORDER BY m.movie_id
-                                ''')
-                g_df = pd.DataFrame(mycursor.fetchall())
-                g_df.columns = ['Movie Title', 'Media Type', 'Price Value']
-                st.write(g_df)
-                st.write('\n')
+                test = mycursor.execute('''
+                                        SELECT movie_id
+                                        FROM movie
+                                        WHERE movie_id IS NOT NULL
+                                        ''')
+                newtest = mycursor.fetchall()
+
+                test2 = mycursor.execute('''
+                                         SELECT price_id
+                                         FROM price
+                                         WHERE price_id IS NOT NULL
+                                        ''')
+                newtest2 = mycursor.fetchall()
+
+                # print(newtest)
+                # if newtest is empty list, print message
+                if not newtest:
+                    st.write('No Movies in Database.')
+                elif not newtest2:
+                    st.write('No Prices in Database.')
+                
+                else:
+                    mycursor.execute('''
+                                    SELECT movie_title
+                                    ,      GROUP_CONCAT(media_type) AS media_type
+                                    ,      GROUP_CONCAT(price_value) AS price_value
+                                    FROM movie m
+                                    LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
+                                    LEFT JOIN media md ON mm.media_id = md.media_id
+                                    LEFT JOIN price p ON mm.price_id = p.price_id
+                                    GROUP BY movie_title, m.movie_id
+                                    ORDER BY m.movie_id
+                                    ''')
+                    g_df = pd.DataFrame(mycursor.fetchall())
+                    g_df.columns = ['Movie Title', 'Media Type', 'Price Value']
+                    st.write(g_df)
+                    st.write('\n')
             else:
                 mycursor.execute('''
                                 SELECT media_id
