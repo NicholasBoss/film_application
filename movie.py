@@ -4,9 +4,9 @@ class movie:
         self.db_cursor = db_cursor
         self.mydb = mydb
 
-    def add_movie(self, movie_id, movie_title, movie_year, rating_id):
-        self.db_cursor.execute('INSERT INTO movie (movie_id, movie_title, movie_year, rating_id) VALUES (%s, %s, %s, %s)',
-                                (movie_id, movie_title, movie_year, rating_id))
+    def add_movie(self, movie_title, movie_year, rating_id):
+        self.db_cursor.execute('INSERT INTO movie (movie_title, movie_year, rating_id) VALUES (%s, %s, %s)',
+                                (movie_title, movie_year, rating_id))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')

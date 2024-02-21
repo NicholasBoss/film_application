@@ -24,12 +24,9 @@ class media:
         print(self.db_cursor.rowcount, 'record deleted.')
         print('\n')
 
-    def add_movie_media(self, media_title, movie_id):
-        self.add_media(media_title, movie_id)
-        self.db_cursor.execute('SELECT media_id FROM media WHERE media_title = %s', (media_title, ))
-        media_id = self.db_cursor.fetchone()[0]
-        self.db_cursor.execute('INSERT INTO movie_media (movie_id, media_id) VALUES (%s, %s)',
-                                (movie_id, media_id))
+    def add_movie_media(self, media_id, movie_id, price_id):
+        self.db_cursor.execute('INSERT INTO movie_media (movie_id, media_id, price_id) VALUES (%s, %s, %s)',
+                                (movie_id, media_id, price_id))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')

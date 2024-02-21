@@ -164,9 +164,6 @@ if uname == 'student' and pwd == 'student':
             st.write('No Ratings in Database. Cannot enter a movie.')
         
         else:
-
-            movie_id = st.text_input('Enter Movie Id: ')
-            # change movie id to an integer
             
             movie_title = st.text_input('Enter Movie Title: ')
             movie_year = st.number_input('Enter Release Year: ')
@@ -182,11 +179,9 @@ if uname == 'student' and pwd == 'student':
 
             usr_button = st.button('Add Movie')
             # use dbcreate.py add_employee function
-            if usr_button:
-                movie_id = int(movie_id)
-                
+            if usr_button:                
                 add_mov = movie(mycursor, film)
-                add_mov.add_movie(movie_id, movie_title, movie_year, rating_id)
+                add_mov.add_movie(movie_title, movie_year, rating_id)
 
             st.write(mycursor.rowcount, 'record created.')
             st.write('\n')
@@ -1089,6 +1084,7 @@ if uname == 'student' and pwd == 'student':
                                     "Choose an Option", 
                                     "View Media",
                                     "Add Media",
+                                    "Link Media, Movie, and Price",
                                     "Update Media",
                                     "Delete Media"])
     # View media
@@ -1202,61 +1198,72 @@ if uname == 'student' and pwd == 'student':
         st.write('\n')
         media_type = st.text_input('Enter Media Type: ')
             
-        # checkbox to add media to movie
-        if st.checkbox('Add Media to Movie'):
-            st.write('\n')
-            test = mycursor.execute('''
-                                    SELECT movie_id
-                                    FROM movie
-                                    ''')
-            newtest = mycursor.fetchall()
+        
+        media_button = st.button('Add Media')
+        # use media.py add_media function
+        if media_button:
+            add_media = media(mycursor, film)
+            add_media.add_media(media_type)
+        st.write(mycursor.rowcount, 'record created.')
+        st.write('\n')
 
-            test2 = mycursor.execute('''
-                                    SELECT price_id
-                                    FROM price
-                                    ''')
-            newtest2 = mycursor.fetchall()
-            # print(newtest)
-            # if newtest is empty list, print message
-            if not newtest and not newtest2:
-                st.write('No Movies or Prices in Database.')
-            elif not newtest:
-                st.write('No Movies in Database.')
-            elif not newtest2:
-                st.write('No Prices in Database.')
-            else:
-                mycursor.execute('''
-                                SELECT movie_title
-                                ,      movie_id 
+    elif media_input == "Link Media, Movie, and Price":
+        # checkbox to add media to movie
+        st.write('\n')
+        test = mycursor.execute('''
+                                SELECT movie_id
                                 FROM movie
                                 ''')
-                m_df = pd.DataFrame(mycursor.fetchall())
-                m_df.columns = ['Movie Title', 'Movie Id']
-                st.write(m_df)
-                me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
-                st.write('\n')
-                mycursor.execute('''
-                                SELECT price_id
-                                ,      price_value
-                                FROM   price
-                                ''')
-                p_df = pd.DataFrame(mycursor.fetchall())
-                p_df.columns = ['Price Id', 'Price Value']
-                st.write(p_df)
-                price_id = st.text_input('Enter Price Id: ')
-                media_movie_button = st.button('Add Media to Movie')
+        newtest = mycursor.fetchall()
 
-                if media_movie_button:
-                    add_media_movie = media(mycursor, film)
-                    add_media_movie.add_movie_media(media_type, me_movie_id)
+        test2 = mycursor.execute('''
+                                SELECT price_id
+                                FROM price
+                                ''')
+        newtest2 = mycursor.fetchall()
+        # print(newtest)
+        # if newtest is empty list, print message
+        if not newtest and not newtest2:
+            st.write('No Movies or Prices in Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Prices in Database.')
         else:
-            media_button = st.button('Add Media')
-            # use media.py add_media function
-            if media_button:
-                add_media = media(mycursor, film)
-                add_media.add_media(media_type)
-            st.write(mycursor.rowcount, 'record created.')
+            mycursor.execute('''
+                            SELECT media_id
+                            ,      media_type
+                            FROM media
+                            ''')
+            me_df = pd.DataFrame(mycursor.fetchall())
+            me_df.columns = ['Media Id', 'Media Type']
+            st.write(me_df)
+            media_id = st.text_input('Enter Media Id: ')
             st.write('\n')
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT price_id
+                            ,      price_value
+                            FROM   price
+                            ''')
+            p_df = pd.DataFrame(mycursor.fetchall())
+            p_df.columns = ['Price Id', 'Price Value']
+            st.write(p_df)
+            price_id = st.text_input('Enter Price Id: ')
+            media_movie_button = st.button('Add Media to Movie')
+
+            if media_movie_button:
+                add_media_movie = media(mycursor, film)
+                add_media_movie.add_movie_media(media_id, me_movie_id, price_id)
 
     # Update media
     elif media_input == "Update Media":
