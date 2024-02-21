@@ -313,12 +313,12 @@ if uname == 'student' and pwd == 'student':
             # add functionality to filter by movie
             if st.checkbox('Filter by Movie'):
                 mycursor.execute('''
-                                SELECT movie_title
-                                ,      movie_id 
+                                SELECT movie_id
+                                ,      movie_title 
                                 FROM movie
                                 ''')
                 m_df = pd.DataFrame(mycursor.fetchall())
-                m_df.columns = ['Movie Title', 'Movie Id']
+                m_df.columns = ['Movie Id', 'Movie Title']
                 st.write(m_df)
                 movie_id = st.text_input('Enter Movie Id: ')
                 st.write('\n')
@@ -1284,7 +1284,7 @@ if uname == 'student' and pwd == 'student':
                     mycursor.execute('''
                                     SELECT movie_title
                                     ,      GROUP_CONCAT(media_type) AS media_type
-                                    ,      GROUP_CONCAT(price_value) AS price_value
+                                    ,      GROUP_CONCAT(CONCAT('$',price_value)) AS price_value
                                     FROM movie m
                                     LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
                                     LEFT JOIN media md ON mm.media_id = md.media_id
