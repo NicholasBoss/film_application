@@ -18,10 +18,7 @@ class genre:
         print(self.db_cursor.rowcount, 'record updated.')
         print('\n')
 
-    def add_movie_genre(self, genre_name, movie_id):
-        self.add_genre(genre_name)
-        self.db_cursor.execute('SELECT genre_id FROM genre WHERE genre_name = %s', (genre_name, ))
-        genre_id = self.db_cursor.fetchone()[0]
+    def add_movie_genre(self, genre_id, movie_id):
         self.db_cursor.execute('INSERT INTO movie_genre (movie_id, genre_id) VALUES (%s, %s)',
                                 (movie_id, genre_id))
         self.mydb.commit()

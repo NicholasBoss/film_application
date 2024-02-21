@@ -18,10 +18,7 @@ class feature:
         print(self.db_cursor.rowcount, 'record updated.')
         print('\n')
 
-    def add_movie_feature(self, feature_name, movie_id):
-        self.add_feature(feature_name)
-        self.db_cursor.execute('SELECT feature_id FROM feature WHERE feature_name = %s', (feature_name, ))
-        feature_id = self.db_cursor.fetchone()[0]
+    def add_movie_feature(self, feature_id, movie_id):
         self.db_cursor.execute('INSERT INTO movie_feature (movie_id, feature_id) VALUES (%s, %s)',
                                 (movie_id, feature_id))
         self.mydb.commit()

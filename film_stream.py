@@ -287,8 +287,13 @@ if uname == 'student' and pwd == 'student':
             st.write('\n')
 
 # Actor Menu
-    actor_input = st.selectbox(
-        "Actor Menu", ["Choose an Option", "View Actors", "Add Actor", "Update Actor", "Delete Actor"])
+    actor_input = st.selectbox("Actor Menu", [
+                               "Choose an Option", 
+                               "View Actors", 
+                               "Add Actor", 
+                               "Link Actor to Movie", 
+                               "Update Actor", 
+                               "Delete Actor"])
 
     # View actor
     if actor_input == "View Actors":
@@ -352,20 +357,39 @@ if uname == 'student' and pwd == 'student':
 
         if a_lname == '':
             a_lname = ' '
+        
+        actor_button = st.button('Add Actor')
+        # use gear.py add_gear function
+        if actor_button:
+            add_actor = actor(mycursor, film)
+            add_actor.add_actor(a_fname, a_lname)
+        st.write(mycursor.rowcount, 'record updated.')
+        st.write('\n')
 
-        # list movie first name and id
-        #Add checkbox that checks for adding actor to movie
-        if st.checkbox('Enter Actor for Movie'):
+    elif actor_input == "Link Actor to Movie":
+        
             test = mycursor.execute('''
                                 SELECT movie_id
                                 FROM movie
                                 WHERE movie_id IS NOT NULL
                                 ''')
             newtest = mycursor.fetchall()
+
+            test2 = mycursor.execute('''
+                                    SELECT actor_id
+                                    FROM actor
+                                    WHERE actor_id IS NOT NULL
+                                    ''')
+            newtest2 = mycursor.fetchall()
+
             # print(newtest)
             # if newtest is empty list, print message
-            if not newtest:
+            if not newtest and not newtest2:
+                st.write('No Movies or Actors in the Database.')
+            elif not newtest:
                 st.write('No Movies in Database.')
+            elif not newtest2:
+                st.write('No Actors in Database.')
             else:
                 mycursor.execute('''
                                 SELECT movie_title
@@ -377,18 +401,22 @@ if uname == 'student' and pwd == 'student':
                 st.write(a_df)
                 movie_id = st.text_input('Enter Movie Id: ')
                 st.write('\n')
+                mycursor.execute('''
+                                SELECT actor_id
+                                ,      actor_fname
+                                ,      actor_lname
+                                FROM   actor
+                                ''')
+                a_df = pd.DataFrame(mycursor.fetchall())
+                a_df.columns = ['Actor Id', 'Actor First Name', 'Actor Last Name']
+                st.write(a_df)
+                actor_id = st.text_input('Enter Actor Id: ')
+                st.write('\n')
                 movie_actor_add = st.button('Add Actor to Movie')
 
                 if movie_actor_add:
                     add_movie_actor = actor(mycursor, film)
-                    add_movie_actor.add_movie_actor(a_fname, a_lname, movie_id)
-        actor_button = st.button('Add Actor')
-        # use gear.py add_gear function
-        if actor_button:
-            add_actor = actor(mycursor, film)
-            add_actor.add_actor(a_fname, a_lname)
-        st.write(mycursor.rowcount, 'record updated.')
-        st.write('\n')
+                    add_movie_actor.add_movie_actor(actor_id, movie_id)
 
     elif actor_input == "Update Actor":
         st.write('\n')
@@ -528,31 +556,62 @@ if uname == 'student' and pwd == 'student':
         st.write('\n')
         genre_name = st.text_input('Enter Genre Name: ')
             
-        # checkbox to add genre to movie
-        if st.checkbox('Add Genre to Movie'):
+        
+        genre_button = st.button('Add Genre')
+        # use genre.py add_genre function
+        if genre_button:
+            add_genre = genre(mycursor, film)
+            add_genre.add_genre(genre_name)
+        st.write(mycursor.rowcount, 'record created.')
+        st.write('\n')
+
+    elif genre_input == "Link Genre to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT genre_id
+                                FROM genre
+                                WHERE genre_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Genres in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Genres in Database.')
+        else:
             mycursor.execute('''
-                            SELECT movie_title
-                            ,      movie_id 
+                            SELECT movie_id
+                            ,      movie_title 
                             FROM movie
                             ''')
             m_df = pd.DataFrame(mycursor.fetchall())
-            m_df.columns = ['Movie Title', 'Movie Id']
+            m_df.columns = ['Movie Id', 'Movie Title']
             st.write(m_df)
             movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT genre_id
+                            ,      genre_name
+                            FROM genre
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Genre Id', 'Genre Name']
+            st.write(s_df)
+            genre_id = st.text_input('Enter Genre Id: ')
             st.write('\n')
             genre_movie_button = st.button('Add Genre to Movie')
 
             if genre_movie_button:
                 add_genre_movie = genre(mycursor, film)
-                add_genre_movie.add_movie_genre(genre_name, movie_id)
-        else:
-            genre_button = st.button('Add Genre')
-            # use genre.py add_genre function
-            if genre_button:
-                add_genre = genre(mycursor, film)
-                add_genre.add_genre(genre_name)
-            st.write(mycursor.rowcount, 'record created.')
-            st.write('\n')
+                add_genre_movie.add_movie_genre(genre_id, movie_id)
 
     
 
@@ -631,6 +690,7 @@ if uname == 'student' and pwd == 'student':
                                     "Choose an Option", 
                                     "View Features",
                                     "Add Feature",
+                                    "Link Feature to Movie",
                                     "Update Feature",
                                     "Delete Feature"])
     
@@ -653,12 +713,12 @@ if uname == 'student' and pwd == 'student':
             # checkbox to filter by movie
             if st.checkbox('Filter by Movie'):
                 mycursor.execute('''
-                                SELECT movie_title
-                                ,      movie_id 
+                                SELECT movie_id
+                                ,      movie_Title 
                                 FROM movie
                                 ''')
                 m_df = pd.DataFrame(mycursor.fetchall())
-                m_df.columns = ['Movie Title', 'Movie Id']
+                m_df.columns = ['Movie Id', 'Movie Title']
                 st.write(m_df)
                 movie_id = st.text_input('Enter Movie Id: ')
                 st.write('\n')
@@ -694,31 +754,62 @@ if uname == 'student' and pwd == 'student':
         st.write('\n')
         feature_name = st.text_input('Enter Feature Name: ')
             
-        # checkbox to add feature to movie
-        if st.checkbox('Add Feature to Movie'):
+        
+        feature_button = st.button('Add Feature')
+        # use feature.py add_feature function
+        if feature_button:
+            add_feature = feature(mycursor, film)
+            add_feature.add_feature(feature_name)
+        st.write(mycursor.rowcount, 'record created.')
+        st.write('\n')
+
+    elif feature_input == "Link Feature to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT feature_id
+                                FROM feature
+                                WHERE feature_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Features in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Features in Database.')
+        else:
             mycursor.execute('''
-                            SELECT movie_title
-                            ,      movie_id 
+                            SELECT movie_id
+                            ,      movie_title 
                             FROM movie
                             ''')
             m_df = pd.DataFrame(mycursor.fetchall())
-            m_df.columns = ['Movie Title', 'Movie Id']
+            m_df.columns = ['Movie Id', 'Movie Title']
             st.write(m_df)
             movie_id = st.text_input('Enter Movie Id: ')
+            st.write('\n')
+            mycursor.execute('''
+                            SELECT feature_id
+                            ,      feature_name
+                            FROM feature
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Feature Id', 'Feature Name']
+            st.write(s_df)
+            feature_id = st.text_input('Enter Feature Id: ')
             st.write('\n')
             feature_movie_button = st.button('Add Feature to Movie')
 
             if feature_movie_button:
                 add_feature_movie = feature(mycursor, film)
-                add_feature_movie.add_movie_feature(feature_name, movie_id)
-        else:
-            feature_button = st.button('Add Feature')
-            # use feature.py add_feature function
-            if feature_button:
-                add_feature = feature(mycursor, film)
-                add_feature.add_feature(feature_name)
-            st.write(mycursor.rowcount, 'record created.')
-            st.write('\n')
+                add_feature_movie.add_movie_feature(feature_id, movie_id)
 
     # Update feature
     elif feature_input == "Update Feature":
@@ -795,6 +886,7 @@ if uname == 'student' and pwd == 'student':
                                     "Choose an Option", 
                                     "View Studios",
                                     "Add Studio",
+                                    "Link Studio to Movie",
                                     "Update Studio",
                                     "Delete Studio"])
     # View studio
@@ -857,43 +949,66 @@ if uname == 'student' and pwd == 'student':
         st.write('\n')
         studio_name = st.text_input('Enter Studio Name: ')
             
-        # checkbox to add studio to movie
-        if st.checkbox('Add Studio to Movie'):
-            st.write('\n')
-            test = mycursor.execute('''
-                                    SELECT movie_id
-                                    FROM movie 
-                                    WHERE movie_id IS NOT NULL
-                                    ''')
-            newtest = mycursor.fetchall()
-            # print(newtest)
-            # if newtest is empty list, print message
-            if not newtest:
-                st.write('No Movies in Database.')
-            else:
-                mycursor.execute('''
-                                SELECT movie_title
-                                ,      movie_id 
-                                FROM movie
-                                ''')
-                m_df = pd.DataFrame(mycursor.fetchall())
-                m_df.columns = ['Movie Title', 'Movie Id']
-                st.write(m_df)
-                movie_id = st.text_input('Enter Movie Id: ')
-                st.write('\n')
-                studio_movie_button = st.button('Add Studio to Movie')
+        
+        studio_button = st.button('Add Studio')
+        # use studio.py add_studio function
+        if studio_button:
+            add_studio = studio(mycursor, film)
+            add_studio.add_studio(studio_name)
+        st.write(mycursor.rowcount, 'record created.')
+        st.write('\n')
 
-                if studio_movie_button:
-                    add_studio_movie = studio(mycursor, film)
-                    add_studio_movie.add_movie_studio(studio_name, movie_id)
+    #Link Studio to Movie
+    elif studio_input == "Link Studio to Movie":
+        st.write('\n')
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT studio_id
+                                FROM studio
+                                WHERE studio_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        # print(newtest)
+        # if newtest is empty list, print message
+        if not newtest and not newtest2:
+            st.write('No Movies or Studios in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Studios in Database.') 
         else:
-            studio_button = st.button('Add Studio')
-            # use studio.py add_studio function
-            if studio_button:
-                add_studio = studio(mycursor, film)
-                add_studio.add_studio(studio_name)
-            st.write(mycursor.rowcount, 'record created.')
+            mycursor.execute('''
+                            SELECT movie_id
+                            ,      movie_title 
+                            FROM movie
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Id', 'Movie Title']
+            st.write(m_df)
+            movie_id = st.text_input('Enter Movie Id: ')
             st.write('\n')
+            mycursor.execute('''
+                            SELECT studio_id
+                            ,      studio_name 
+                            FROM studio
+                            ''')
+            s_df = pd.DataFrame(mycursor.fetchall())
+            s_df.columns = ['Studio Id', 'Studio Name']
+            st.write(s_df)
+            studio_id = st.text_input('Enter Studio Id: ')
+            st.write('\n')
+            studio_movie_button = st.button('Add Studio to Movie')
+
+            if studio_movie_button:
+                add_studio_movie = studio(mycursor, film)
+                add_studio_movie.add_movie_studio(studio_id, movie_id)
 
     # Update studio
     elif studio_input == "Update Studio":

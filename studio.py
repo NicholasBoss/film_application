@@ -18,10 +18,7 @@ class studio:
         print(self.db_cursor.rowcount, 'record updated.')
         print('\n')
 
-    def add_movie_studio(self, studio_name, movie_id):
-        self.add_studio(studio_name)
-        self.db_cursor.execute('SELECT studio_id FROM studio WHERE studio_name = %s', (studio_name, ))
-        studio_id = self.db_cursor.fetchone()[0]
+    def add_movie_studio(self, studio_id, movie_id):
         self.db_cursor.execute('INSERT INTO movie_studio (movie_id, studio_id) VALUES (%s, %s)',
                                 (movie_id, studio_id))
         self.mydb.commit()
