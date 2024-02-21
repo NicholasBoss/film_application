@@ -25,7 +25,11 @@ class media:
         print('\n')
 
     def add_movie_media(self, media_id, movie_id, price_id):
-        self.db_cursor.execute('INSERT INTO movie_media (movie_id, media_id, price_id) VALUES (%s, %s, %s)',
+        if price_id == None:
+            self.db_cursor.execute('INSERT INTO movie_media (movie_id, media_id) VALUES (%s, %s)',
+                                (movie_id, media_id))
+        else:
+            self.db_cursor.execute('INSERT INTO movie_media (movie_id, media_id, price_id) VALUES (%s, %s, %s)',
                                 (movie_id, media_id, price_id))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record inserted.')

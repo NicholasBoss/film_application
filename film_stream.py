@@ -1374,6 +1374,8 @@ if uname == 'student' and pwd == 'student':
             p_df.columns = ['Price Id', 'Price Value']
             st.write(p_df)
             price_id = st.text_input('Enter Price Id: ')
+            if price_id == '':
+                price_id = None
             media_movie_button = st.button('Add Media to Movie')
 
             if media_movie_button:
