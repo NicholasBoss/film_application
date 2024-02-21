@@ -94,7 +94,7 @@ if uname == 'student' and pwd == 'student':
                                 LEFT JOIN movie_feature as mf ON m.movie_id = mf.movie_id
                                     LEFT JOIN feature as f ON mf.feature_id = f.feature_id
                                 LEFT JOIN rating as r ON m.rating_id = r.rating_id
-                            GROUP BY 1,4,8, m.movie_id
+                            GROUP BY movie_title, movie_year, rating_level, m.movie_id
                             ORDER BY m.movie_id;
                             ''')
             df = pd.DataFrame(mycursor.fetchall())
