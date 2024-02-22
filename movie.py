@@ -12,9 +12,9 @@ class movie:
         print('\n')
 
 
-    def update_movie(self, movie_id, movie_year, rating_id):
-        self.db_cursor.execute('UPDATE movie SET movie_year = %s, rating_id = %s WHERE movie_id = %s',
-                                (movie_year, rating_id, movie_id))
+    def update_movie(self, movie_id, new_movie_title, new_movie_year, new_rating_id):
+        self.db_cursor.execute('UPDATE movie SET movie_title = %s, movie_year = %s, rating_id = %s WHERE movie_id = %s',
+                                (new_movie_title, new_movie_year, new_rating_id, movie_id))
         
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record updated.')

@@ -105,8 +105,9 @@ if uname == 'student' and pwd == 'student':
     user_input = st.selectbox("Rating Menu", [
                               "Choose an Option",
                               "View Ratings",
-                              "Add Rating"])
-    
+                              "Add Rating",
+                              "Remove Rating"])
+    # View ratings
     if user_input == "View Ratings":
         test = mycursor.execute('''
                                   SELECT rating_id
@@ -126,6 +127,7 @@ if uname == 'student' and pwd == 'student':
             st.write(df)
             st.write('\n')
     
+    # Add rating
     if user_input == "Add Rating":
 
         rating_level = st.selectbox("Add a Rating:", [
@@ -142,6 +144,38 @@ if uname == 'student' and pwd == 'student':
 
         st.write(mycursor.rowcount, 'record created.')
         st.write('\n')
+
+    # Remove rating
+    elif user_input == "Remove Rating":
+        test = mycursor.execute('''
+                                  SELECT rating_id
+                                  FROM   rating
+                                  WHERE  rating_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        if not newtest:
+            st.write("There are no ratings in the database.")
+
+        else:
+            mycursor.execute('''SELECT * FROM rating''')
+            # Print all rows formatted using panda dataframe
+            df = pd.DataFrame(mycursor.fetchall())
+            df.columns = ['Rating Id', 'Rating Level']
+            st.write(df)
+            st.write('\n')
+
+            rating_id = st.text_input('Enter Rating Id: ')
+            st.write('\n')
+
+            usr_button = st.button("Remove Rating")
+
+            if usr_button:
+                remove_rating = rating(mycursor, film)
+                remove_rating.delete_rating(rating_id)
+
+                st.write(mycursor.rowcount, 'record deleted.')
+                st.write('\n')
 # Movies
     user_input = st.selectbox("Movie Menu", [
                             "Choose an Option", 
@@ -235,7 +269,12 @@ if uname == 'student' and pwd == 'student':
             st.write('No movies in Database.')
         else:
             mycursor.execute('''
-                            SELECT * FROM movie
+                            SELECT movie_id
+                            ,      movie_title
+                            ,      movie_year
+                            ,      rating_level
+                            FROM   movie m
+                            LEFT JOIN rating r ON m.rating_id = r.rating_id
                             ''')
 
             # Print all rows formatted using panda dataframe
@@ -244,29 +283,80 @@ if uname == 'student' and pwd == 'student':
             st.write(df)
             st.write('\n')
             movie_id = st.text_input('Enter Movie Id: ')
-            movie_year = st.text_input('Enter New Release Year (YYYY): ')
-            rating = mycursor.execute('''
-                                        SELECT rating_id, rating_level
-                                        FROM   rating;
-                                    ''')
-            df = pd.DataFrame(mycursor.fetchall())
-            df.columns = ['Rating ID','Rating Level']
-            st.write(df)
-            rating_id = st.text_input('Enter rating Id : ')
-            
-            st.write('\n')
-            usr_button = st.button('Update Movie')
-            # use dbcreate.py update_employee function
-            if usr_button:
-                update_mov = movie(mycursor, film)
-                update_mov.update_movie(movie_id, movie_year, rating_id)
-
-            st.write(mycursor.rowcount, 'record updated.')
             st.write('\n')
 
-    # View employees
+            movie_update_button = st.checkbox('Update Selected Movie')
+
+            if movie_update_button:
+                mycursor.execute('''
+                                SELECT movie_id
+                                ,      rating_id
+                                ,      movie_year
+                                ,      movie_title
+                                FROM   movie
+                                WHERE  movie_id != %s
+                                ''', (movie_id,))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Movie does not exist.')
+                else:
+                    movie_id = result[0][0]
+                    rating_id = result[0][1]
+                    movie_year = result[0][2]
+                    movie_title = result[0][3]
+
+                    mycursor.execute('''
+                                     SELECT movie_id
+                                     ,      movie_title
+                                     ,      movie_year
+                                     ,      rating_id
+                                     FROM   movie
+                                     WHERE  movie_id = %s
+                                        ''', (movie_id,))
+                    result = mycursor.fetchall()
+                    if result is None:
+                        st.write('Movie does not exist.')
+                    else:
+                        result_df = pd.DataFrame(result)
+                        result_df.columns = ['Movie Id', 'Movie Title', 'Movie Year', 'Rating Id']
+                        st.write("Record to be updated: ")
+                        st.write(result_df)
+
+                        new_movie_title = st.text_input('Enter New Movie Title: ')
+                        st.write('\n')
+                        new_movie_year = st.text_input('Enter New Release Year (YYYY): ')
+                        rating = mycursor.execute('''
+                                                    SELECT rating_id, rating_level
+                                                    FROM   rating;
+                                                ''')
+                        df = pd.DataFrame(mycursor.fetchall())
+                        df.columns = ['Rating ID','Rating Level']
+                        st.write(df)
+                        new_rating_id = st.text_input('Enter rating Id : ')
+                        
+                        st.write('\n')
+                        usr_button = st.button('Update Movie')
+                        # use movie.py update_employee function
+                        if usr_button:
+                            if new_movie_title == '' and new_movie_year == '' and new_rating_id == '':
+                                st.write('No changes made.')
+                            if new_movie_year == '':
+                                new_movie_year = movie_year
+                            if new_movie_title == '':
+                                new_movie_title = movie_title
+                            if new_rating_id == '':
+                                new_rating_id = rating_id
+                            else:
+
+                                update_mov = movie(mycursor, film)
+                                update_mov.update_movie(movie_id, new_movie_title, new_movie_year, new_rating_id)
+
+                                st.write(mycursor.rowcount, 'record updated.')
+                                st.write('\n')
+
+    # View movies
     elif user_input == 'View Movies':
-        # st.write('View Employees')
+        # st.write('View Movies')
         st.write('\n')
         test = mycursor.execute('''
                                 SELECT movie_id
@@ -377,8 +467,8 @@ if uname == 'student' and pwd == 'student':
         if actor_button:
             add_actor = actor(mycursor, film)
             add_actor.add_actor(a_fname, a_lname)
-        st.write(mycursor.rowcount, 'record updated.')
-        st.write('\n')
+            st.write(mycursor.rowcount, 'record updated.')
+            st.write('\n')
 
     # Link actor to movie
     elif actor_input == "Link Actor to Movie":
@@ -432,8 +522,8 @@ if uname == 'student' and pwd == 'student':
                 if movie_actor_add:
                     add_movie_actor = actor(mycursor, film)
                     add_movie_actor.add_movie_actor(actor_id, movie_id)
-                st.write(mycursor.rowcount, 'record updated.')
-                st.write('\n')
+                    st.write(mycursor.rowcount, 'record updated.')
+                    st.write('\n')
 
 
     # Update actor link to movie
@@ -532,8 +622,8 @@ if uname == 'student' and pwd == 'student':
                         if update_movie_actor:
                             update_movie_actor = actor(mycursor, film)
                             update_movie_actor.update_movie_actor(actor_id, movie_id, new_movie_link_id, new_actor_link_id)
-                        st.write(mycursor.rowcount, 'record updated.')
-                        st.write('\n')
+                            st.write(mycursor.rowcount, 'record updated.')
+                            st.write('\n')
 
 
     #Delete Actor Link to Movie
@@ -900,8 +990,8 @@ if uname == 'student' and pwd == 'student':
                             else:
                                 update_genre_movie = genre(mycursor, film)
                                 update_genre_movie.update_movie_genre(genre_id, movie_id, new_movie_link_id, new_genre_link_id)
-                            st.write(mycursor.rowcount, 'record updated.')
-                            st.write('\n')
+                                st.write(mycursor.rowcount, 'record updated.')
+                                st.write('\n')
 
 
     # Delete Genre Link to Movie
@@ -979,8 +1069,8 @@ if uname == 'student' and pwd == 'student':
             if genre_button:
                 update_genre = genre(mycursor, film)
                 update_genre.update_genre(genre_id, genre_name)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete Genre
     elif genre_input == "Delete Genre":
@@ -1013,8 +1103,8 @@ if uname == 'student' and pwd == 'student':
             if delete_genre_button:
                 delete_genre = genre(mycursor, film)
                 delete_genre.delete_genre(genre_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     
     #Feature
@@ -1145,8 +1235,8 @@ if uname == 'student' and pwd == 'student':
             if feature_movie_button:
                 add_feature_movie = feature(mycursor, film)
                 add_feature_movie.add_movie_feature(feature_id, movie_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
 
     # Update feature link to movie
@@ -1245,8 +1335,8 @@ if uname == 'student' and pwd == 'student':
                             else:
                                 update_feature_movie = feature(mycursor, film)
                                 update_feature_movie.update_movie_feature(feature_id, movie_id, new_movie_link_id, new_feature_link_id)
-                        st.write(mycursor.rowcount, 'record updated.')
-                        st.write('\n')
+                            st.write(mycursor.rowcount, 'record updated.')
+                            st.write('\n')
 
     # Delete feature link to movie
     elif feature_input == "Delete Feature Link to Movie":
@@ -1323,8 +1413,8 @@ if uname == 'student' and pwd == 'student':
             if feature_button:
                 update_feature = feature(mycursor, film)
                 update_feature.update_feature(feature_id, feature_name)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete feature
     elif feature_input == "Delete Feature":
@@ -1357,8 +1447,8 @@ if uname == 'student' and pwd == 'student':
             if delete_feature_button:
                 delete_feature = feature(mycursor, film)
                 delete_feature.delete_feature(feature_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     #Studio
             
@@ -1663,8 +1753,8 @@ if uname == 'student' and pwd == 'student':
             if studio_button:
                 update_studio = studio(mycursor, film)
                 update_studio.update_studio(studio_id, studio_name)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete studio
     elif studio_input == "Delete Studio":
@@ -1697,8 +1787,8 @@ if uname == 'student' and pwd == 'student':
             if delete_studio_button:
                 delete_studio = studio(mycursor, film)
                 delete_studio.delete_studio(studio_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
 #Price Menu
     price_input = st.selectbox("Price Menu", [
@@ -1778,8 +1868,8 @@ if uname == 'student' and pwd == 'student':
             if price_button:
                 update_price = price(mycursor, film)
                 update_price.update_price(price_id, price_value)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete price
     elif price_input == "Delete Price":
@@ -1812,8 +1902,8 @@ if uname == 'student' and pwd == 'student':
             if delete_price_button:
                 delete_price = price(mycursor, film)
                 delete_price.delete_price(price_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
 # Media Menu
     media_input = st.selectbox("Media Menu", [
@@ -2155,8 +2245,8 @@ if uname == 'student' and pwd == 'student':
                                 
                             update_media_movie = media(mycursor, film)
                             update_media_movie.update_movie_media(media_id, movie_id, price_id, new_movie_link_id, new_media_link_id, new_price_link_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete media and price link to movie
     elif media_input == "Delete Media and Price Links to Movie":
@@ -2202,8 +2292,8 @@ if uname == 'student' and pwd == 'student':
             if media_movie_button:
                 delete_media_movie = media(mycursor, film)
                 delete_media_movie.delete_movie_media(movie_media_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Update media
     elif media_input == "Update Media":
@@ -2237,8 +2327,8 @@ if uname == 'student' and pwd == 'student':
             if media_button:
                 update_media = media(mycursor, film)
                 update_media.update_media(media_id, media_type)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Delete media
     elif media_input == "Delete Media":
@@ -2271,5 +2361,5 @@ if uname == 'student' and pwd == 'student':
             if delete_media_button:
                 delete_media = media(mycursor, film)
                 delete_media.delete_media(media_id)
-            st.write(mycursor.rowcount, 'record updated.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
