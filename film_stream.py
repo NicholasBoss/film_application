@@ -1911,11 +1911,9 @@ if uname == 'student' and pwd == 'student':
             st.write('No Prices in Database.')
         else:
             mycursor.execute('''
-                            SELECT m.movie_id
+                            SELECT movie_media_id
                             ,      movie_title
-                            ,      md.media_id
                             ,      media_type
-                            ,      p.price_id
                             ,      price_value
                             FROM movie m
                             LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
@@ -1924,47 +1922,72 @@ if uname == 'student' and pwd == 'student':
                             ORDER BY m.movie_id
                             ''')
             me_df = pd.DataFrame(mycursor.fetchall())
-            me_df.columns = ['Movie Id', 'Movie Title', 'Media Id', 'Media Type', 'Price Id', 'Price Value']
+            me_df.columns = ['Movie Media Id', 'Movie Title', 'Media Type', 'Price Value']
             st.write(me_df)
-            me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
+            movie_media_id = st.text_input('Enter Movie Media Id: ')
             st.write('\n')
-            media_id = st.text_input('Enter Media Id: ')
-            st.write('\n')
-            price_id = st.text_input('Enter Price Id: ')
-            if price_id == '':
-                price_id = None
             media_movie_button = st.checkbox('Update Media and Price Links to Movie')
 
             if media_movie_button:
                 mycursor.execute('''
-                                SELECT m.movie_id
-                                ,      movie_title
-                                ,      md.media_id
-                                ,      media_type
-                                ,      p.price_id
-                                ,      price_value
-                                FROM movie m
-                                LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
-                                LEFT JOIN media md ON mm.media_id = md.media_id
-                                LEFT JOIN price p ON mm.price_id = p.price_id
-                                WHERE m.movie_id = %s AND md.media_id = %s AND p.price_id = %s
-                                ORDER BY m.movie_id
-                                ''', (me_movie_id, media_id, price_id))
+                                 SELECT movie_id
+                                 ,      media_id
+                                 ,      price_id
+                                 FROM movie_media
+                                 WHERE movie_media_id = %s
+                                 ''', (movie_media_id,))
+                
                 result = mycursor.fetchall()
+
                 if result is None:
                     st.write('Media is not linked to movie.')
                 else:
-                    result_df = pd.DataFrame(result)
-                    result_df.columns = ['Movie Id', 'Movie Title', 'Media Id', 'Media Type', 'Price Id', 'Price Value']
-                    st.write(result_df)
+                    movie_id = result[0][0]
+                    media_id = result[0][1]
+                    price_id = result[0][2]
+                    
+                    mycursor.execute('''
+                                    SELECT m.movie_id
+                                    ,      movie_title
+                                    ,      md.media_id
+                                    ,      media_type
+                                    ,      p.price_id
+                                    ,      price_value
+                                    FROM movie m
+                                    LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
+                                    LEFT JOIN media md ON mm.media_id = md.media_id
+                                    LEFT JOIN price p ON mm.price_id = p.price_id
+                                    WHERE m.movie_id = %s AND md.media_id = %s
+                                    ORDER BY m.movie_id
+                                    ''', (movie_id, media_id))
+                    result = mycursor.fetchall()
+                    if result is None:
+                        st.write('Media is not linked to movie.')
+                    else:
+                        result_df = pd.DataFrame(result)
+                        result_df.columns = ['Movie Id', 'Movie Title', 'Media Id', 'Media Type', 'Price Id', 'Price Value']
+                        st.write(result_df)
 
-                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
-                    st.write('\n')
-                    update_media_movie = st.button('Link Media to New Movie')
+                        new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                        st.write('\n')
+                        new_media_link_id = st.text_input('Enter New Media Id: ')
+                        st.write('\n')
+                        new_price_link_id = st.text_input('Enter New Price Id (To Remove a Price, Enter 0): ')
+                        st.write('\n')
+                        update_media_movie = st.button('Link Media to New Movie')
 
-                    if update_media_movie:
-                        update_media_movie = media(mycursor, film)
-                        update_media_movie.update_movie_media(media_id, me_movie_id, price_id, new_movie_link_id)
+                        if update_media_movie:
+                            if new_price_link_id == '':
+                                new_price_link_id = price_id
+                            if new_media_link_id == '':
+                                new_media_link_id = media_id
+                            if new_movie_link_id == '':
+                                new_movie_link_id = movie_id
+                                
+                            update_media_movie = media(mycursor, film)
+                            update_media_movie.update_movie_media(media_id, movie_id, price_id, new_movie_link_id, new_media_link_id, new_price_link_id)
+            st.write(mycursor.rowcount, 'record updated.')
+            st.write('\n')
 
     # Delete media and price link to movie
     elif media_input == "Delete Media and Price Links to Movie":

@@ -35,13 +35,17 @@ class media:
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')
 
-    def update_movie_media(self, media_id, movie_id, price_id, new_movie_id):
-        self.db_cursor.execute('SELECT movie_media_id FROM movie_media WHERE media_id = %s AND movie_id = %s',(media_id, movie_id))
-        result = self.db_cursor.fetchone()
+    def update_movie_media(self, media_id, movie_id, price_id, new_movie_id, new_media_id, new_price_id):
         if price_id == None:
-            self.db_cursor.execute('UPDATE movie_media SET movie_id = %s, media_id = %s WHERE movie_media_id = %s', (movie_id, media_id, result[0]))
+            self.db_cursor.execute('SELECT movie_media_id FROM movie_media WHERE media_id = %s AND movie_id = %s AND price_id IS NULL',(media_id, movie_id))
+            result = self.db_cursor.fetchone()
         else:
-            self.db_cursor.execute('UPDATE movie_media SET movie_id = %s, media_id = %s, price_id = %s WHERE movie_media_id = %s', (new_movie_id, media_id, price_id, result[0]))
+            self.db_cursor.execute('SELECT movie_media_id FROM movie_media WHERE media_id = %s AND movie_id = %s and price_id = %s',(media_id, movie_id, price_id))
+            result = self.db_cursor.fetchone()
+        if new_price_id == '0':
+            self.db_cursor.execute('UPDATE movie_media SET movie_id = %s, media_id = %s, price_id = NULL WHERE movie_media_id = %s', (new_movie_id, new_media_id, result[0]))
+        else:
+            self.db_cursor.execute('UPDATE movie_media SET movie_id = %s, media_id = %s, price_id = %s WHERE movie_media_id = %s', (new_movie_id, new_media_id, new_price_id, result[0]))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record updated.')
         print('\n')
