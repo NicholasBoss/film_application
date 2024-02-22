@@ -293,6 +293,7 @@ if uname == 'student' and pwd == 'student':
                                "Add Actor", 
                                "Link Actor to Movie", 
                                "Update Actor Link to Movie",
+                               "Delete Actor Link to Movie",
                                "Update Actor", 
                                "Delete Actor"])
 
@@ -313,31 +314,42 @@ if uname == 'student' and pwd == 'student':
         else:
             # add functionality to filter by movie
             if st.checkbox('Filter by Movie'):
-                mycursor.execute('''
-                                SELECT movie_id
-                                ,      movie_title 
-                                FROM movie
-                                ''')
-                m_df = pd.DataFrame(mycursor.fetchall())
-                m_df.columns = ['Movie Id', 'Movie Title']
-                st.write(m_df)
-                movie_id = st.text_input('Enter Movie Id: ')
-                st.write('\n')
-                movie_filter_button = st.button('Filter')
-
-                if movie_filter_button:
+                test = mycursor.execute('''
+                                        SELECT movie_id
+                                        FROM movie 
+                                        WHERE movie_id IS NOT NULL
+                                        ''')
+                newtest = mycursor.fetchall()
+                # print(newtest)
+                # if newtest is empty list, print message
+                if not newtest:
+                    st.write('No Movies in Database.')
+                else:
                     mycursor.execute('''
-                                    SELECT movie_title
-                                    ,      GROUP_CONCAT( DISTINCT CONCAT_WS(' ',actor_fname, actor_lname)) AS Actor
-                                    FROM movie m 
-                                    LEFT JOIN cast c ON m.movie_id = c.movie_id 
-                                    LEFT JOIN actor a ON c.actor_id = a.actor_id 
-                                    WHERE m.movie_id = %s
-                                    ''', (movie_id,))
-                    a_df = pd.DataFrame(mycursor.fetchall())
-                    a_df.columns = ['Movie Title', 'Actors']
-                    st.write(a_df)
+                                    SELECT movie_id
+                                    ,      movie_title 
+                                    FROM movie
+                                    ''')
+                    m_df = pd.DataFrame(mycursor.fetchall())
+                    m_df.columns = ['Movie Id', 'Movie Title']
+                    st.write(m_df)
+                    movie_id = st.text_input('Enter Movie Id: ')
                     st.write('\n')
+                    movie_filter_button = st.button('Filter')
+
+                    if movie_filter_button:
+                        mycursor.execute('''
+                                        SELECT movie_title
+                                        ,      GROUP_CONCAT( DISTINCT CONCAT_WS(' ',actor_fname, actor_lname)) AS Actor
+                                        FROM movie m 
+                                        LEFT JOIN cast c ON m.movie_id = c.movie_id 
+                                        LEFT JOIN actor a ON c.actor_id = a.actor_id 
+                                        WHERE m.movie_id = %s
+                                        ''', (movie_id,))
+                        a_df = pd.DataFrame(mycursor.fetchall())
+                        a_df.columns = ['Movie Title', 'Actors']
+                        st.write(a_df)
+                        st.write('\n')
             else:
                 mycursor.execute('''
                                 SELECT actor_fname
@@ -350,6 +362,7 @@ if uname == 'student' and pwd == 'student':
                 st.write(ac_df)
                 st.write('\n')
 
+    # Add actor
     elif actor_input == "Add Actor":
         # st.write('Add Gear')
         st.write('\n')
@@ -461,11 +474,101 @@ if uname == 'student' and pwd == 'student':
             st.write('\n')
             actor_id = st.text_input('Enter Actor Id: ')
             st.write('\n')
-            movie_actor_button = st.button('Update Actor Link to Movie')
+            movie_actor_button = st.checkbox('Update Actor Link to Movie')
 
             if movie_actor_button:
-                update_movie_actor = actor(mycursor, film)
-                update_movie_actor.update_movie_actor(actor_id, movie_id)
+                mycursor.execute('''
+                                SELECT m.movie_id
+                                ,      movie_title
+                                ,      a.actor_id
+                                ,      actor_fname
+                                ,      actor_lname
+                                FROM movie m 
+                                LEFT JOIN cast c ON m.movie_id = c.movie_id 
+                                LEFT JOIN actor a ON c.actor_id = a.actor_id
+                                WHERE m.movie_id = %s AND a.actor_id = %s
+                                ORDER BY m.movie_id
+                                ''', (movie_id, actor_id))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Actor is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Movie Id', 'Movie Title', 'Actor Id', 'Actor First Name', 'Actor Last Name']
+                    st.write(result_df)
+
+                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                    st.write('\n')
+                    update_movie_actor = st.button('Link Actor to New Movie')
+
+                    if update_movie_actor:
+                        update_movie_actor = actor(mycursor, film)
+                        update_movie_actor.update_movie_actor(actor_id, movie_id, new_movie_link_id)
+
+    #Delete Actor Link to Movie
+    elif actor_input == "Delete Actor Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT actor_id
+                                FROM actor
+                                WHERE actor_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Actors in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Actors in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT cast_id
+                            ,      movie_title
+                            ,      actor_fname
+                            ,      actor_lname
+                            FROM movie m 
+                            LEFT JOIN cast c ON m.movie_id = c.movie_id 
+                            LEFT JOIN actor a ON c.actor_id = a.actor_id
+                            ORDER BY m.movie_id
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Cast Id', 'Movie Title', 'Actor First Name', 'Actor Last Name']
+            st.write(m_df)
+            cast_id = st.text_input('Enter Cast Id: ')
+            st.write('\n')
+            movie_actor_button = st.checkbox('Delete Actor Link to Movie')
+
+            if movie_actor_button:
+                mycursor.execute('''
+                                SELECT cast_id
+                                ,      movie_title
+                                ,      actor_fname
+                                ,      actor_lname
+                                FROM movie m 
+                                LEFT JOIN cast c ON m.movie_id = c.movie_id 
+                                LEFT JOIN actor a ON c.actor_id = a.actor_id
+                                WHERE cast_id = %s
+                                ORDER BY m.movie_id
+                                ''', (cast_id,))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Actor is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Cast Id', 'Movie Title', 'Actor First Name', 'Actor Last Name']
+                    st.write(result_df)
+                    delete_movie_actor = st.button('Delete Actor Link to Movie')
+
+                    if delete_movie_actor:
+                        delete_movie_actor = actor(mycursor, film)
+                        delete_movie_actor.delete_movie_actor(cast_id)
 
     #update actor
     elif actor_input == "Update Actor":
@@ -547,6 +650,7 @@ if uname == 'student' and pwd == 'student':
                                     "Add Genre",
                                     "Link Genre to Movie",
                                     "Update Genre Link to Movie",
+                                    "Delete Genre Link to Movie",
                                     "Update Genre",
                                     "Delete Genre"])
     # View genres
@@ -707,11 +811,78 @@ if uname == 'student' and pwd == 'student':
             st.write('\n')
             genre_id = st.text_input('Enter Genre Id: ')
             st.write('\n')
-            genre_movie_button = st.button('Update Genre Link to Movie')
+            genre_movie_button = st.checkbox('Update Genre Link to Movie')
 
             if genre_movie_button:
-                update_genre_movie = genre(mycursor, film)
-                update_genre_movie.update_movie_genre(genre_id, movie_id)
+                mycursor.execute('''
+                                SELECT m.movie_id
+                                ,      movie_title
+                                ,      g.genre_id
+                                ,      genre_name
+                                FROM movie m
+                                LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
+                                LEFT JOIN genre g ON mg.genre_id = g.genre_id
+                                WHERE m.movie_id = %s AND g.genre_id = %s
+                                ORDER BY m.movie_id
+                                ''', (movie_id, genre_id))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Genre is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Movie Id', 'Movie Title', 'Genre Id', 'Genre Name']
+                    st.write(result_df)
+
+                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                    st.write('\n')
+                    update_genre_movie = st.button('Link Genre to New Movie')
+
+                    if update_genre_movie:
+                        update_genre_movie = genre(mycursor, film)
+                        update_genre_movie.update_movie_genre(genre_id, movie_id, new_movie_link_id)
+
+    # Delete Genre Link to Movie
+    elif genre_input == "Delete Genre Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT genre_id
+                                FROM genre
+                                WHERE genre_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Genres in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Genres in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_genre_id
+                            ,      movie_title 
+                            ,      genre_name
+                            FROM movie m
+                            LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
+                            LEFT JOIN genre g ON mg.genre_id = g.genre_id
+                            ORDER BY m.movie_id
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Genre Id', 'Movie Title', 'Genre Name']
+            st.write(m_df)
+            movie_genre_id = st.text_input('Enter Movie Genre Id: ')
+            st.write('\n')
+            genre_movie_button = st.button('Delete Genre Link to Movie')
+
+            if genre_movie_button:
+                delete_genre_movie = genre(mycursor, film)
+                delete_genre_movie.delete_movie_genre(movie_genre_id)
 
     # Update Genre
     elif genre_input == "Update Genre":
@@ -789,7 +960,8 @@ if uname == 'student' and pwd == 'student':
                                     "View Features",
                                     "Add Feature",
                                     "Link Feature to Movie",
-                                    "Update Feature Link to Movie"
+                                    "Update Feature Link to Movie",
+                                    "Delete Feature Link to Movie",
                                     "Update Feature",
                                     "Delete Feature"])
     
@@ -951,11 +1123,79 @@ if uname == 'student' and pwd == 'student':
             st.write('\n')
             feature_id = st.text_input('Enter Feature Id: ')
             st.write('\n')
-            feature_movie_button = st.button('Update Feature Link to Movie')
+            feature_movie_button = st.checkbox('Update Feature Link to Movie')
 
             if feature_movie_button:
-                update_feature_movie = feature(mycursor, film)
-                update_feature_movie.update_movie_feature(feature_id, movie_id)
+                mycursor.execute('''
+                                SELECT m.movie_id
+                                ,      movie_title
+                                ,      f.feature_id
+                                ,      feature_name
+                                FROM movie m
+                                LEFT JOIN movie_feature mf ON m.movie_id = mf.movie_id
+                                LEFT JOIN feature f ON mf.feature_id = f.feature_id
+                                WHERE m.movie_id = %s AND f.feature_id = %s
+                                ORDER BY m.movie_id
+                                ''', (movie_id, feature_id))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Feature is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Movie Id', 'Movie Title', 'Feature Id', 'Feature Name']
+                    st.write(result_df)
+
+                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                    st.write('\n')
+                    update_feature_movie = st.button('Link Feature to New Movie')
+
+                    if update_feature_movie:
+
+                        update_feature_movie = feature(mycursor, film)
+                        update_feature_movie.update_movie_feature(feature_id, movie_id, new_movie_link_id)
+
+    # Delete feature link to movie
+    elif feature_input == "Delete Feature Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT feature_id
+                                FROM feature
+                                WHERE feature_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Features in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Features in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_feature_id
+                            ,      movie_title 
+                            ,      feature_name
+                            FROM movie m
+                            LEFT JOIN movie_feature mf ON m.movie_id = mf.movie_id
+                            LEFT JOIN feature f ON mf.feature_id = f.feature_id
+                            ORDER BY m.movie_id
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Feature Id', 'Movie Title', 'Feature Name']
+            st.write(m_df)
+            movie_feature_id = st.text_input('Enter Movie Feature Id: ')
+            st.write('\n')
+            feature_movie_button = st.button('Delete Feature Link to Movie')
+
+            if feature_movie_button:
+                delete_feature_movie = feature(mycursor, film)
+                delete_feature_movie.delete_movie_feature(movie_feature_id)
 
     # Update feature
     elif feature_input == "Update Feature":
@@ -1034,6 +1274,7 @@ if uname == 'student' and pwd == 'student':
                                     "Add Studio",
                                     "Link Studio to Movie",
                                     "Update Studio Link to Movie",
+                                    "Delete Studio Link to Movie",
                                     "Update Studio",
                                     "Delete Studio"])
     # View studio
@@ -1197,11 +1438,78 @@ if uname == 'student' and pwd == 'student':
             st.write('\n')
             studio_id = st.text_input('Enter Studio Id: ')
             st.write('\n')
-            studio_movie_button = st.button('Update Studio Link to Movie')
+            studio_movie_button = st.checkbox('Update Studio Link to Movie')
 
             if studio_movie_button:
-                update_studio_movie = studio(mycursor, film)
-                update_studio_movie.update_movie_studio(studio_id, movie_id)
+                mycursor.execute('''
+                                SELECT m.movie_id
+                                ,      movie_title
+                                ,      s.studio_id
+                                ,      studio_name
+                                FROM movie m
+                                LEFT JOIN movie_studio ms ON m.movie_id = ms.movie_id
+                                LEFT JOIN studio s ON ms.studio_id = s.studio_id
+                                WHERE m.movie_id = %s AND s.studio_id = %s
+                                ORDER BY m.movie_id
+                                ''', (movie_id, studio_id))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Studio is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Movie Id', 'Movie Title', 'Studio Id', 'Studio Name']
+                    st.write(result_df)
+
+                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                    st.write('\n')
+                    update_studio_movie = st.button('Link Studio to New Movie')
+
+                    if update_studio_movie:
+                        update_studio_movie = studio(mycursor, film)
+                        update_studio_movie.update_movie_studio(studio_id, movie_id, new_movie_link_id)
+
+    # Delete studio link to movie
+    elif studio_input == "Delete Studio Link to Movie":
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie 
+                                WHERE movie_id IS NOT NULL
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT studio_id
+                                FROM studio
+                                WHERE studio_id IS NOT NULL
+                                ''')
+        newtest2 = mycursor.fetchall()
+
+        if not newtest and not newtest2:
+            st.write('No Movies or Studios in the Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Studios in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_studio_id
+                            ,      movie_title 
+                            ,      studio_name
+                            FROM movie m
+                            LEFT JOIN movie_studio ms ON m.movie_id = ms.movie_id
+                            LEFT JOIN studio s ON ms.studio_id = s.studio_id
+                            ORDER BY m.movie_id
+                            ''')
+            m_df = pd.DataFrame(mycursor.fetchall())
+            m_df.columns = ['Movie Studio Id', 'Movie Title', 'Studio Name']
+            st.write(m_df)
+            movie_studio_id = st.text_input('Enter Movie Studio Id: ')
+            st.write('\n')
+            studio_movie_button = st.button('Delete Studio Link to Movie')
+
+            if studio_movie_button:
+                delete_studio_movie = studio(mycursor, film)
+                delete_studio_movie.delete_movie_studio(movie_studio_id)
 
     # Update studio
     elif studio_input == "Update Studio":
@@ -1394,6 +1702,7 @@ if uname == 'student' and pwd == 'student':
                                     "Add Media",
                                     "Link Media, Movie, and Price",
                                     "Update Media and Price Links to Movie",
+                                    "Delete Media and Price Links to Movie",
                                     "Update Media",
                                     "Delete Media"])
     # View media
@@ -1617,18 +1926,92 @@ if uname == 'student' and pwd == 'student':
             me_df = pd.DataFrame(mycursor.fetchall())
             me_df.columns = ['Movie Id', 'Movie Title', 'Media Id', 'Media Type', 'Price Id', 'Price Value']
             st.write(me_df)
-            media_id = st.text_input('Enter Media Id: ')
-            st.write('\n')
             me_movie_id = st.text_input('Enter Movie Id to Join with Media: ')
+            st.write('\n')
+            media_id = st.text_input('Enter Media Id: ')
             st.write('\n')
             price_id = st.text_input('Enter Price Id: ')
             if price_id == '':
                 price_id = None
-            media_movie_button = st.button('Update Media and Price Links to Movie')
+            media_movie_button = st.checkbox('Update Media and Price Links to Movie')
 
             if media_movie_button:
-                update_media_movie = media(mycursor, film)
-                update_media_movie.update_movie_media(media_id, me_movie_id, price_id)
+                mycursor.execute('''
+                                SELECT m.movie_id
+                                ,      movie_title
+                                ,      md.media_id
+                                ,      media_type
+                                ,      p.price_id
+                                ,      price_value
+                                FROM movie m
+                                LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
+                                LEFT JOIN media md ON mm.media_id = md.media_id
+                                LEFT JOIN price p ON mm.price_id = p.price_id
+                                WHERE m.movie_id = %s AND md.media_id = %s AND p.price_id = %s
+                                ORDER BY m.movie_id
+                                ''', (me_movie_id, media_id, price_id))
+                result = mycursor.fetchall()
+                if result is None:
+                    st.write('Media is not linked to movie.')
+                else:
+                    result_df = pd.DataFrame(result)
+                    result_df.columns = ['Movie Id', 'Movie Title', 'Media Id', 'Media Type', 'Price Id', 'Price Value']
+                    st.write(result_df)
+
+                    new_movie_link_id = st.text_input('Enter New Movie Id: ')
+                    st.write('\n')
+                    update_media_movie = st.button('Link Media to New Movie')
+
+                    if update_media_movie:
+                        update_media_movie = media(mycursor, film)
+                        update_media_movie.update_movie_media(media_id, me_movie_id, price_id, new_movie_link_id)
+
+    # Delete media and price link to movie
+    elif media_input == "Delete Media and Price Links to Movie":
+        st.write('\n')
+        test = mycursor.execute('''
+                                SELECT movie_id
+                                FROM movie
+                                ''')
+        newtest = mycursor.fetchall()
+
+        test2 = mycursor.execute('''
+                                SELECT price_id
+                                FROM price
+                                ''')
+        newtest2 = mycursor.fetchall()
+        # print(newtest)
+        # if newtest is empty list, print message
+        if not newtest and not newtest2:
+            st.write('No Movies or Prices in Database.')
+        elif not newtest:
+            st.write('No Movies in Database.')
+        elif not newtest2:
+            st.write('No Prices in Database.')
+        else:
+            mycursor.execute('''
+                            SELECT movie_media_id
+                            ,      movie_title
+                            ,      media_type
+                            ,      price_value
+                            FROM movie m
+                            LEFT JOIN movie_media mm ON m.movie_id = mm.movie_id
+                            LEFT JOIN media md ON mm.media_id = md.media_id
+                            LEFT JOIN price p ON mm.price_id = p.price_id
+                            ORDER BY m.movie_id
+                            ''')
+            me_df = pd.DataFrame(mycursor.fetchall())
+            me_df.columns = ['Movie Media Id', 'Movie Title', 'Media Type', 'Price Value']
+            st.write(me_df)
+            movie_media_id = st.text_input('Enter a Movie Media Id: ')
+            st.write('\n')
+            media_movie_button = st.button('Delete Media and Price Link to Movie')
+
+            if media_movie_button:
+                delete_media_movie = media(mycursor, film)
+                delete_media_movie.delete_movie_media(movie_media_id)
+            st.write(mycursor.rowcount, 'record updated.')
+            st.write('\n')
 
     # Update media
     elif media_input == "Update Media":

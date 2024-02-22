@@ -32,10 +32,16 @@ class actor:
         print(self.db_cursor.rowcount, 'record inserted.')
         print('\n')
 
-    def update_movie_actor(self, actor_id, movie_id):
+    def update_movie_actor(self, actor_id, movie_id, new_movie_id):
         self.db_cursor.execute('SELECT cast_id FROM cast WHERE actor_id = %s AND movie_id = %s',(actor_id, movie_id))
         result = self.db_cursor.fetchone()
-        self.db_cursor.execute('UPDATE cast SET movie_id = %s, actor_id = %s WHERE cast_id = %s', (movie_id, actor_id, result[0]))
+        self.db_cursor.execute('UPDATE cast SET movie_id = %s, actor_id = %s WHERE cast_id = %s', (new_movie_id, actor_id, result[0]))
         self.mydb.commit()
         print(self.db_cursor.rowcount, 'record updated.')
+        print('\n')
+
+    def delete_movie_actor(self, cast_id):
+        self.db_cursor.execute('DELETE FROM cast WHERE cast_id = %s', (cast_id,))
+        self.mydb.commit()
+        print(self.db_cursor.rowcount, 'record deleted.')
         print('\n')
