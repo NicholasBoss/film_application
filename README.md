@@ -4,6 +4,10 @@ This project shows a possible frontend for a database in the Intro to Databases 
 
 # System Requirements
 
+VS Code
+
+Python (Make sure you add it to the path/environment variables when installing)
+
 MySQL Workbench
 
 MySQL Server
