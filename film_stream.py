@@ -710,6 +710,8 @@ if uname == 'student' and pwd == 'student':
                     if delete_movie_actor:
                         delete_movie_actor = actor(mycursor, film)
                         delete_movie_actor.delete_movie_actor(cast_id)
+                        st.write(mycursor.rowcount, 'record deleted.')
+                        st.write('\n')
 
     #update actor
     elif actor_input == "Update Actor":
@@ -746,8 +748,8 @@ if uname == 'student' and pwd == 'student':
             if up_actor_button:
                 update_actor = actor(mycursor, film)
                 update_actor.update_actor(actor_id, a_fname, a_lname)
-            st.write(mycursor.rowcount, 'record updated')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record updated')
+                st.write('\n')
     
     # Delete actor
     elif actor_input == 'Delete Actor':
@@ -780,8 +782,8 @@ if uname == 'student' and pwd == 'student':
             if del_actor_button:
                 delete_actor = actor(mycursor, film)
                 delete_actor.delete_actor(actor_id)
-            st.write(mycursor.rowcount, 'record deleted.')
-            st.write('\n')
+                st.write(mycursor.rowcount, 'record deleted.')
+                st.write('\n')
 
 
 # Genre
@@ -1056,6 +1058,8 @@ if uname == 'student' and pwd == 'student':
             if genre_movie_button:
                 delete_genre_movie = genre(mycursor, film)
                 delete_genre_movie.delete_movie_genre(movie_genre_id)
+                st.write(mycursor.rowcount, 'record deleted.')
+                st.write('\n')
 
     # Update Genre
     elif genre_input == "Update Genre":
@@ -1123,7 +1127,7 @@ if uname == 'student' and pwd == 'student':
             if delete_genre_button:
                 delete_genre = genre(mycursor, film)
                 delete_genre.delete_genre(genre_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
 
     
@@ -1355,8 +1359,8 @@ if uname == 'student' and pwd == 'student':
                             else:
                                 update_feature_movie = feature(mycursor, film)
                                 update_feature_movie.update_movie_feature(feature_id, movie_id, new_movie_link_id, new_feature_link_id)
-                            st.write(mycursor.rowcount, 'record updated.')
-                            st.write('\n')
+                                st.write(mycursor.rowcount, 'record updated.')
+                                st.write('\n')
 
     # Delete feature link to movie
     elif feature_input == "Delete Feature Link to Movie":
@@ -1400,6 +1404,8 @@ if uname == 'student' and pwd == 'student':
             if feature_movie_button:
                 delete_feature_movie = feature(mycursor, film)
                 delete_feature_movie.delete_movie_feature(movie_feature_id)
+                st.write(mycursor.rowcount, 'record deleted.')
+                st.write('\n')
 
     # Update feature
     elif feature_input == "Update Feature":
@@ -1467,7 +1473,7 @@ if uname == 'student' and pwd == 'student':
             if delete_feature_button:
                 delete_feature = feature(mycursor, film)
                 delete_feature.delete_feature(feature_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
 
     #Studio
@@ -1547,8 +1553,8 @@ if uname == 'student' and pwd == 'student':
         if studio_button:
             add_studio = studio(mycursor, film)
             add_studio.add_studio(studio_name)
-        st.write(mycursor.rowcount, 'record created.')
-        st.write('\n')
+            st.write(mycursor.rowcount, 'record created.')
+            st.write('\n')
 
     #Link Studio to Movie
     elif studio_input == "Link Studio to Movie":
@@ -1601,6 +1607,8 @@ if uname == 'student' and pwd == 'student':
             if studio_movie_button:
                 add_studio_movie = studio(mycursor, film)
                 add_studio_movie.add_movie_studio(studio_id, movie_id)
+                st.write(mycursor.rowcount, 'record updated.')
+                st.write('\n')
 
     # Update studio link to movie
     elif studio_input == "Update Studio Link to Movie":
@@ -1697,6 +1705,8 @@ if uname == 'student' and pwd == 'student':
 
                             update_studio_movie = studio(mycursor, film)
                             update_studio_movie.update_movie_studio(studio_id, movie_id, new_movie_link_id, new_studio_link_id)
+                            st.write(mycursor.rowcount, 'record updated.')
+                            st.write('\n')
 
     # Delete studio link to movie
     elif studio_input == "Delete Studio Link to Movie":
@@ -1740,6 +1750,9 @@ if uname == 'student' and pwd == 'student':
             if studio_movie_button:
                 delete_studio_movie = studio(mycursor, film)
                 delete_studio_movie.delete_movie_studio(movie_studio_id)
+                st.write(mycursor.rowcount, 'record deleted.')
+                st.write('\n')
+
 
     # Update studio
     elif studio_input == "Update Studio":
@@ -1807,7 +1820,7 @@ if uname == 'student' and pwd == 'student':
             if delete_studio_button:
                 delete_studio = studio(mycursor, film)
                 delete_studio.delete_studio(studio_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
 
 #Price Menu
@@ -1853,8 +1866,8 @@ if uname == 'student' and pwd == 'student':
         if price_button:
             add_price = price(mycursor, film)
             add_price.add_price(price_value)
-        st.write(mycursor.rowcount, 'record created.')
-        st.write('\n')
+            st.write(mycursor.rowcount, 'record created.')
+            st.write('\n')
 
     # Update price
     elif price_input == "Update Price":
@@ -1922,7 +1935,7 @@ if uname == 'student' and pwd == 'student':
             if delete_price_button:
                 delete_price = price(mycursor, film)
                 delete_price.delete_price(price_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
 
 # Media Menu
@@ -2052,8 +2065,8 @@ if uname == 'student' and pwd == 'student':
         if media_button:
             add_media = media(mycursor, film)
             add_media.add_media(media_type)
-        st.write(mycursor.rowcount, 'record created.')
-        st.write('\n')
+            st.write(mycursor.rowcount, 'record created.')
+            st.write('\n')
 
     # Link media and price to movie
     elif media_input == "Link Media, Movie, and Price":
@@ -2115,6 +2128,8 @@ if uname == 'student' and pwd == 'student':
             if media_movie_button:
                 add_media_movie = media(mycursor, film)
                 add_media_movie.add_movie_media(media_id, me_movie_id, price_id)
+                st.write(mycursor.rowcount, 'record created.')
+                st.write('\n')
 
     # Update media and price link to movie
     elif media_input == "Update Media and Price Links to Movie":
@@ -2265,8 +2280,8 @@ if uname == 'student' and pwd == 'student':
                                 
                             update_media_movie = media(mycursor, film)
                             update_media_movie.update_movie_media(media_id, movie_id, price_id, new_movie_link_id, new_media_link_id, new_price_link_id)
-                st.write(mycursor.rowcount, 'record updated.')
-                st.write('\n')
+                            st.write(mycursor.rowcount, 'record updated.')
+                            st.write('\n')
 
     # Delete media and price link to movie
     elif media_input == "Delete Media and Price Links to Movie":
@@ -2312,7 +2327,7 @@ if uname == 'student' and pwd == 'student':
             if media_movie_button:
                 delete_media_movie = media(mycursor, film)
                 delete_media_movie.delete_movie_media(movie_media_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
 
     # Update media
@@ -2381,5 +2396,5 @@ if uname == 'student' and pwd == 'student':
             if delete_media_button:
                 delete_media = media(mycursor, film)
                 delete_media.delete_media(media_id)
-                st.write(mycursor.rowcount, 'record updated.')
+                st.write(mycursor.rowcount, 'record deleted.')
                 st.write('\n')
