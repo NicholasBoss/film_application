@@ -294,7 +294,7 @@ if uname == 'student' and pwd == 'student':
                                 ,      movie_year
                                 ,      movie_title
                                 FROM   movie
-                                WHERE  movie_id != %s
+                                WHERE  movie_id = %s
                                 ''', (movie_id,))
                 result = mycursor.fetchall()
                 if result is None:
@@ -346,13 +346,12 @@ if uname == 'student' and pwd == 'student':
                                 new_movie_title = movie_title
                             if new_rating_id == '':
                                 new_rating_id = rating_id
-                            else:
+                           
+                            update_mov = movie(mycursor, film)
+                            update_mov.update_movie(movie_id, new_movie_title, new_movie_year, new_rating_id)
 
-                                update_mov = movie(mycursor, film)
-                                update_mov.update_movie(movie_id, new_movie_title, new_movie_year, new_rating_id)
-
-                                st.write(mycursor.rowcount, 'record updated.')
-                                st.write('\n')
+                            st.write(mycursor.rowcount, 'record updated.')
+                            st.write('\n')
 
     # View movies
     elif user_input == 'View Movies':
@@ -603,6 +602,21 @@ if uname == 'student' and pwd == 'student':
                         st.write(result_df)
 
                         mycursor.execute('''
+                                            SELECT movie_id
+                                            ,      movie_title
+                                            FROM   movie
+                                            WHERE  movie_id != %s
+                                            ''', (movie_id,))
+                        new_movie_df = pd.DataFrame(mycursor.fetchall())
+                        new_movie_df.columns = ['Movie Id', 'Movie Title']
+                        st.write('Available Movies: ')
+                        st.write(new_movie_df)
+
+
+                        new_movie_link_id = st.text_input('Enter Movie Id: ')
+                        st.write('\n')
+
+                        mycursor.execute('''
                                          SELECT actor_id
                                          ,      actor_fname
                                          ,      actor_lname
@@ -614,12 +628,18 @@ if uname == 'student' and pwd == 'student':
                         st.write('Available Actors: ')
                         st.write(new_actor_df)
 
-                        new_movie_link_id = movie_id
-                        st.write('\n')
+                        
                         new_actor_link_id = st.text_input('Enter Actor Id: ')
+                        st.write('\n')
                         update_movie_actor = st.button('Link Actor to New Movie')
 
                         if update_movie_actor:
+                            if new_movie_link_id == '' and new_actor_link_id == '':
+                                st.write('No changes made.')
+                            if new_movie_link_id == '':
+                                new_movie_link_id = movie_id
+                            if new_actor_link_id == '':
+                                new_actor_link_id = actor_id
                             update_movie_actor = actor(mycursor, film)
                             update_movie_actor.update_movie_actor(actor_id, movie_id, new_movie_link_id, new_actor_link_id)
                             st.write(mycursor.rowcount, 'record updated.')

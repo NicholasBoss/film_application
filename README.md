@@ -12,7 +12,12 @@ MySQL Workbench
 
 MySQL Server
 
-A student user with access to a 'film' database.
+A student user with access to a 'film' database. This is created in the Local Instance tab (Root User):
+
+```
+    CREATE USER 'student'@'localhost';
+    GRANT ALL ON film.* TO 'student'@'localhost';
+```
 
 # How to Access the Application
 
