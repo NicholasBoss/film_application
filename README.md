@@ -15,8 +15,8 @@ MySQL Server
 A student user with access to a 'film' database. This is created in the Local Instance tab (Root User):
 
 ```
-    CREATE USER 'student'@'localhost';
-    GRANT ALL ON film.* TO 'student'@'localhost';
+CREATE USER 'student'@'localhost';
+GRANT ALL ON film.* TO 'student'@'localhost';
 ```
 
 # How to Access the Application
@@ -24,19 +24,19 @@ A student user with access to a 'film' database. This is created in the Local In
 The streamlit library is used and must be installed using:
 
 ```
-    pip install streamlit
+pip install streamlit
 ```
 
 You must also use the mysql.connector library. You can install it using:
 
 ```
-    pip install mysql-connector-python
+pip install mysql-connector-python
 ```
 
 To run the application, type in the terminal:
 
 ```
-    streamlit run film_stream.py
+streamlit run film_stream.py
 ```
 
 If everything has been successfully installed, the application will run.
