@@ -8,9 +8,11 @@ VS Code
 
 Python (Make sure you add it to the path/environment variables when installing)
 
-MySQL Workbench
+MySQL Workbench 
 
 MySQL Server
+
+(Use the 8.0.34 versions on Windows, MAC users: Workbench does not work normally but you can try using the 8.0.36 versions)
 
 A student user with access to a 'film' database. This is created in the Local Instance tab (Root User):
 
